@@ -1,0 +1,147 @@
+name: 'Debug Phase 02 - Cleanup Orphaned State'
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: 'Type CLEANUP to confirm'
+        required: true
+        type: string
+      dry_run:
+        description: 'Dry run (only show what would be removed)'
+        required: true
+        type: boolean
+        default: true
+
+env:
+  ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+  ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+  ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+  TF_BACKEND_RG: "ubereats-tfstate-rg"
+  TF_BACKEND_SA: ${{ secrets.TF_BACKEND_SA }}
+  TF_BACKEND_CONTAINER: "tfstate"
+  WORKING_DIR: "terraform-infra-cicd/phase-02-unity-catalog"
+
+jobs:
+  cleanup:
+    name: 'Cleanup Orphaned Metastore State'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Validate Confirmation
+        if: inputs.confirmation != 'CLEANUP'
+        run: |
+          echo "❌ You must type 'CLEANUP' to proceed."
+          echo "   You typed: '${{ inputs.confirmation }}'"
+          exit 1
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: '{"clientId":"${{ secrets.ARM_CLIENT_ID }}","clientSecret":"${{ secrets.ARM_CLIENT_SECRET }}","subscriptionId":"${{ secrets.ARM_SUBSCRIPTION_ID }}","tenantId":"${{ secrets.ARM_TENANT_ID }}"}'
+
+      - name: Get Phase 01 Outputs
+        id: phase01
+        run: |
+          az storage blob download \
+            --account-name $TF_BACKEND_SA \
+            --container-name $TF_BACKEND_CONTAINER \
+            --name "phase-01-azure-infra.tfstate" \
+            --file /tmp/phase01.tfstate \
+            --auth-mode login
+          
+          DEV_URL=$(cat /tmp/phase01.tfstate | jq -r '.outputs.dev_workspace_url.value')
+          PROD_URL=$(cat /tmp/phase01.tfstate | jq -r '.outputs.prod_workspace_url.value')
+          
+          echo "dev_workspace_url=$DEV_URL" >> $GITHUB_OUTPUT
+          echo "prod_workspace_url=$PROD_URL" >> $GITHUB_OUTPUT
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.0
+
+      - name: Terraform Init
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          terraform init \
+            -backend-config="resource_group_name=$TF_BACKEND_RG" \
+            -backend-config="storage_account_name=$TF_BACKEND_SA" \
+            -backend-config="container_name=$TF_BACKEND_CONTAINER"
+
+      - name: Show Current State
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          echo "============================================================="
+          echo "  CURRENT STATE - Metastore Resources"
+          echo "============================================================="
+          echo ""
+          terraform state list | grep -E "metastore|time_sleep" || echo "No metastore resources in state"
+          echo ""
+          echo "============================================================="
+
+      - name: Dry Run - Show What Would Be Removed
+        if: inputs.dry_run == true
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          echo "============================================================="
+          echo "  DRY RUN - Would remove these resources from state:"
+          echo "============================================================="
+          echo ""
+          echo "  - databricks_metastore.this[0]"
+          echo "  - databricks_metastore_data_access.this"
+          echo "  - databricks_metastore_assignment.dev"
+          echo "  - databricks_metastore_assignment.prod"
+          echo "  - time_sleep.wait_for_identity_federation"
+          echo ""
+          echo "  NOTE: This only removes from STATE, not from Databricks."
+          echo "        Re-run with dry_run=false to actually clean up."
+          echo ""
+          echo "============================================================="
+
+      - name: Remove Orphaned State References
+        if: inputs.dry_run == false
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          echo "============================================================="
+          echo "  REMOVING ORPHANED STATE REFERENCES"
+          echo "============================================================="
+          echo ""
+          
+          # Metastore resources
+          terraform state rm 'databricks_metastore.this[0]' 2>/dev/null && echo "✅ Removed databricks_metastore.this[0]" || echo "⚠️  databricks_metastore.this[0] not in state"
+          terraform state rm 'databricks_metastore.this' 2>/dev/null && echo "✅ Removed databricks_metastore.this" || echo "⚠️  databricks_metastore.this not in state"
+          terraform state rm databricks_metastore_data_access.this 2>/dev/null && echo "✅ Removed databricks_metastore_data_access.this" || echo "⚠️  databricks_metastore_data_access.this not in state"
+          terraform state rm databricks_metastore_assignment.dev 2>/dev/null && echo "✅ Removed databricks_metastore_assignment.dev" || echo "⚠️  databricks_metastore_assignment.dev not in state"
+          terraform state rm databricks_metastore_assignment.prod 2>/dev/null && echo "✅ Removed databricks_metastore_assignment.prod" || echo "⚠️  databricks_metastore_assignment.prod not in state"
+          
+          # Time sleep (depends on metastore assignments)
+          terraform state rm time_sleep.wait_for_identity_federation 2>/dev/null && echo "✅ Removed time_sleep.wait_for_identity_federation" || echo "⚠️  time_sleep.wait_for_identity_federation not in state"
+          
+          echo ""
+          echo "============================================================="
+
+      - name: Show Remaining State
+        if: inputs.dry_run == false
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          echo "============================================================="
+          echo "  REMAINING STATE"
+          echo "============================================================="
+          echo ""
+          terraform state list || echo "State is empty"
+          echo ""
+          echo "============================================================="
+          echo ""
+          echo "✅ Cleanup complete!"
+          echo ""
+          echo "Next steps:"
+          echo "  1. Re-run Phase 02 workflow"
+          echo "  2. Data source will check for existing metastore"
+          echo "  3. If none exists, a new one will be created"
+          echo ""
+          echo "============================================================="

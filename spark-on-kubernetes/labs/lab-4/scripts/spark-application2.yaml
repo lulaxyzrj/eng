@@ -1,0 +1,46 @@
+apiVersion: sparkoperator.k8s.io/v1beta2
+kind: SparkApplication
+metadata:
+  name: spark-lab4-2
+  namespace: processing
+spec:
+  type: Python
+  pythonVersion: "3"
+  mode: cluster
+  image: grudtnerv/spok:1.0.0
+  imagePullPolicy: Always
+  mainApplicationFile: "local:///app/spark-app3.py"
+  sparkConf:
+    spark.hadoop.fs.s3a.endpoint: "http://datalake-hl.deepstore:9000"
+    spark.hadoop.fs.s3a.access.key: "minio"
+    spark.hadoop.fs.s3a.secret.key: "minio123"
+    spark.hadoop.fs.s3a.path.style.access: "true"
+    spark.hadoop.fs.s3a.impl: "org.apache.hadoop.fs.s3a.S3AFileSystem"
+    # Ajustes de paralelismo e shuffle
+    spark.sql.shuffle.partitions: "10"
+    spark.default.parallelism: "8"
+    # Compressão Parquet
+    spark.sql.parquet.compression.codec: "uncompressed"
+    # Uso de memória
+    spark.memory.fraction: "0.6"
+    spark.memory.storageFraction: "0.3"
+    # Otimização do S3A
+    spark.hadoop.fs.s3a.connection.maximum: "100"
+    spark.hadoop.fs.s3a.fast.upload: "true"
+    spark.hadoop.fs.s3a.threads.max: "20"
+  arguments:
+    - "todos" # ou: todos, orders, products, items
+    - "owshq-shadow-traffic-uber-eats/kafka/orders"
+    - "owshq-shadow-traffic-uber-eats/mysql/products"
+    - "owshq-shadow-traffic-uber-eats/mongodb/items"
+    - "s3a://owshq-shadow-traffic-uber-eats/parquet"
+  sparkVersion: 3.5.3
+  timeToLiveSeconds: 30
+  driver:
+    cores: 1
+    memory: 500m
+    serviceAccount: spark-operator-spark
+  executor:
+    instances: 2
+    cores: 1
+    memory: 1024m

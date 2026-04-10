@@ -1,0 +1,35 @@
+<div class="form-group" [class.error]="showError">
+    <label *ngIf="to.label" [ngClass]="{'col-md-2 col-form-label' : to.horizontalTemplate }">
+        {{ to.label }}
+        <span *ngIf="to.required" class="ng-star-inserted">*</span>
+    </label>
+    <div [ngClass]="{'col-md-10 col-form-label error' : to.horizontalTemplate }">
+        <p-inputNumber class="form-control"
+            [style]="{'width':'100%'}"
+            [styleClass]="{'width':'100%'}"
+            [formlyAttributes]="field"
+            [formControl]="formControl"
+            [formControlName]="to.formControlName"
+            [(ngModel)]="to.value"
+            [required]="to.required"
+            [disabled]="to.disabled"
+            [mode]="to.mode"
+            [currency]="to.currency"
+            [currencyDisplay]="to.currencyDisplay"
+            [locale]="to.locale"
+            [useGrouping]="to.useGrouping"
+            [min]="to.min"
+            [max]="to.max"
+            [minFractionDigits]="to.minFractionDigits"
+            [maxFractionDigits]="to.maxFractionDigits"
+            [prefix]="to.prefix"
+            [suffix]="to.suffix"
+            [showButtons]="to.showButtons"
+            [buttonLayout]="to.buttonLayout"
+            [step]="to.step"
+            [incrementButtonIcon]="to.incrementButtonIcon"
+            [decrementButtonIcon]="to.decrementButtonIcon"
+        ></p-inputNumber>
+    </div>
+    <small id="total-mass" *ngIf="to.showHint">{{ to.hint }}</small>
+</div>

@@ -1,0 +1,49 @@
+<div class="form-group" *ngIf="!to.hidden">
+  <label *ngIf="to.label" [ngClass]="{'col-md-2 col-form-label' : to.horizontalTemplate }">
+    {{ to.label }}
+    <span *ngIf="to.required" class="ng-star-inserted">*</span>
+  </label>
+<div [ngClass]="{'col-md-10 col-form-label' : to.horizontalTemplate }">
+    <ng-select
+        #select
+        [class.lup-select]="to.lupSelect"
+        [items]="options$ | async"
+        [typeahead]="search$"
+        [placeholder]="to.placeholder"
+        [bindLabel]="to.bindLabel"
+        [bindValue]="to.bindValue"
+        [required]="to.required"
+        [addTag]="false"
+        [multiple]="to.multiple"
+        [trackByFn]="to.trackByFn"
+        [formControl]="formControl"
+        [formlyAttributes]="field"
+        [closeOnSelect]="to.closeOnSelect"
+        [groupBy]="to.groupBy"
+        [selectableGroup]="to.selectableGroup"
+        [selectableGroupAsModel]="false"
+        [loading]="to.loading$ | async"
+        [appendTo]="to.appendTo"
+        (change)="to.onChange($event)"
+        clearAllText="{{translate.instant('select.clearSelection')}}"
+        notFoundText="{{translate.instant('select.noItemsFound')}}"
+        loadingText="{{translate.instant('select.searching')}}"
+        typeToSearchText="{{translate.instant('select.typeToStartSearching')}}" >
+        <ng-template *ngIf="to.novoItem" ng-footer-tmp>
+            <button class="btn-new-item" (click)="select.close(); to.novoItem()">
+                <em class="mr-btn-icon material-icons">add</em>
+                {{to.novoItemLabel}}
+            </button>
+        </ng-template>
+        <ng-template ng-header-tmp *ngIf="to.selectAllOption">
+            <div>
+                <button class="btn btn-link" id="selectAll"
+                        (click)="select.close();">Selecionar todos</button>
+                <button class="btn btn-link" id="clearAll"
+                        (click)="select.close()">Limpar todos</button>
+            </div>
+        </ng-template>
+    </ng-select>
+</div>
+
+</div>

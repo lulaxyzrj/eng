@@ -1,0 +1,51 @@
+/* Estilos para o menu */
+.navbar {
+    background-color: #333;
+    overflow: hidden;
+    display: flex;
+    justify-content: flex-end;
+    padding: 10px 20px;
+  }
+  
+  .navbar .logo a {
+    color: white;
+    font-size: 24px;
+    text-decoration: none;
+  }
+  
+  .navbar .menu {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+  }
+  
+  .navbar .menu li {
+    margin-left: 20px;
+  }
+  
+  .navbar .menu li a {
+    color: white;
+    text-decoration: none;
+    padding: 10px 15px;
+    font-size: 16px;
+  }
+  
+  .navbar .menu li a:hover {
+    background-color: #575757;
+    border-radius: 4px;
+  }
+
+  .main-content {
+    padding: 15px;
+    padding-top: 0px;
+  }
+
+  .logo {
+    width: 39px;
+    margin: 0px;
+    position: absolute;
+    left: 11px;
+    top: 4px;
+  }
+  

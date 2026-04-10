@@ -1,0 +1,37 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: s3-smoke
+  namespace: default
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: awscli
+          image: amazon/aws-cli:latest
+          command: ["sh","-c"]
+          args:
+            - |
+              set -e
+              export AWS_ACCESS_KEY_ID=minio
+              export AWS_SECRET_ACCESS_KEY=minio123
+              export AWS_REGION=us-east-1
+              export AWS_S3_FORCE_PATH_STYLE=true
+              EP=http://myminio.deepstore.svc.cluster.local:9000
+
+              echo "[1/4] Listando buckets"
+              aws s3 ls --endpoint-url "$EP" || true
+
+              echo "[2/4] Criando bucket"
+              aws s3 mb s3://shadowtraffic --endpoint-url "$EP" || true
+
+              echo "[3/4] Subindo objeto"
+              echo "ok $(date)" > /tmp/ok.txt
+              aws s3 cp /tmp/ok.txt s3://shadowtraffic/tests/ok.txt --endpoint-url "$EP"
+
+              echo "[4/4] Listando prefixo"
+              aws s3 ls s3://shadowtraffic/tests/ --endpoint-url "$EP"
+
+              echo "SUCESSO"

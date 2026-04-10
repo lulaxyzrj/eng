@@ -1,0 +1,16 @@
+# Terraform
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+.terraform/
+.terraform.lock.hcl
+
+# Sensitive files
+*.auto.tfvars
+credentials.tfvars
+secrets.tfvars
+
+# Phase outputs (contain sensitive data)
+phase01-outputs.json
+

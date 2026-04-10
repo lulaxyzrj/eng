@@ -1,0 +1,93 @@
+.form-group {
+  margin: 0px 0px;
+  label {
+    font-weight: normal;
+    color: #666;
+  }
+}
+
+.error {
+  background: transparent;
+  label {
+    color: red !important;
+  }
+  .form-control {
+    border: solid 1px red !important;
+  }
+}
+
+.form-control {
+  height: 38px !important;
+  box-shadow: none !important;
+}
+
+.form-control:focus {
+  box-shadow: none !important;
+  border-color: #ccc;
+}
+
+::ng-deep .bs-datepicker {
+  box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2), 0px 4px 5px 0px rgba(0, 0, 0, 0.14),
+    0px 1px 10px 0px rgba(0, 0, 0, 0.12) !important;
+}
+
+::ng-deep .theme-default {
+  .bs-datepicker-head {
+    background-color: white;
+  }
+  .bs-datepicker-head button {
+    color: rgba(0, 0, 0, 0.87);
+    font-size: 1.3em;
+  }
+  .bs-datepicker-body {
+    border: none;
+    table {
+      th {
+        color: rgba(0, 0, 0, 0.38);
+      }
+      td {
+        color: rgba(0, 0, 0, 0.87);
+        span.is-other-month {
+          display: none;
+        }
+        span.selected {
+          background-color: #007e7a !important;
+        }
+      }
+    }
+  }
+}
+
+::ng-deep .ui-calendar .ui-datepicker {
+    display: block !important;
+}
+
+::ng-deep body .ui-datepicker table td > a.ui-state-active, body .ui-datepicker table td > span.ui-state-active{
+    border: 1px solid #007F7B !important
+}
+
+::ng-deep body .ui-datepicker table {
+    font-size: 12.6px;
+}
+
+::ng-deep body .ui-inputtext {
+    color: #333;
+    background-color: #fff;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    min-height: 36px;
+    align-items: center;
+}
+
+.left-65 {
+    left: 65px;
+}
+.padding-left-0{
+    padding-left: 0px !important;
+}
+::ng-deep .ui-calendar-timeonly input {
+    width: 100% !important;
+}
+
+
+

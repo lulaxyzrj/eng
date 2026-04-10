@@ -1,0 +1,43 @@
+name: 'Smoke Test - Validate CI/CD'
+
+on:
+  workflow_dispatch:  # Manual trigger
+
+env:
+  ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+  ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+  ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+  TF_BACKEND_RG: "ubereats-tfstate-rg"
+  TF_BACKEND_SA: ${{ secrets.TF_BACKEND_SA }}
+  TF_BACKEND_CONTAINER: "tfstate"
+
+jobs:
+  smoke-test:
+    name: 'Test Backend + SP Auth'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.0
+
+      - name: Terraform Init
+        working-directory: terraform-infra-cicd/smoke-test
+        run: |
+          terraform init \
+            -backend-config="resource_group_name=$TF_BACKEND_RG" \
+            -backend-config="storage_account_name=$TF_BACKEND_SA" \
+            -backend-config="container_name=$TF_BACKEND_CONTAINER"
+
+      - name: Terraform Apply
+        working-directory: terraform-infra-cicd/smoke-test
+        run: terraform apply -auto-approve
+
+      - name: Terraform Destroy
+        working-directory: terraform-infra-cicd/smoke-test
+        run: terraform destroy -auto-approve

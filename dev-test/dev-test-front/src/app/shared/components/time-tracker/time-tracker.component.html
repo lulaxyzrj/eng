@@ -1,0 +1,6 @@
+<label *ngIf="!bold" [style.font-size.px]="fontSize" [style.color]="fontColor" class="label-normal-font">{{formattedTime}}</label>
+<label *ngIf="bold" [style.font-size.px]="fontSize" [style.color]="fontColor"><strong>{{formattedTime}}</strong></label>
+<div class="timeTracker" *ngIf="!formattedTime" style="width: 100px; position: relative; left: 20px;">
+    <p-progressBar mode="indeterminate"></p-progressBar>
+</div>
+

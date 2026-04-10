@@ -1,0 +1,20 @@
+<div class="form-group" [class.error]="showError">
+    <label *ngIf="to.label" [ngClass]="{'col-md-2 col-form-label' : to.horizontalTemplate }">
+        {{ to.label }}
+        <span *ngIf="to.required" class="ng-star-inserted">*</span>
+    </label>
+    <div [ngClass]="{'col-md-10 col-form-label error' : to.horizontalTemplate }">
+        <input [type]="'text'" class="form-control"
+            [(ngModel)]="to.value"
+            [disabled]="to.disabled"
+            [pattern]="to.pattern"
+            [required]="to.required"
+            [max]="to.max"
+            [min]="to.min"
+            (input)="validateValue($event)"
+            (blur)="formatNumber($event)"
+            (keypress)="checkKey($event)"
+        />
+    </div>
+    <small id="total-mass" *ngIf="to.showHint">{{ to.hint + " " + ("global.measures.tonAbreviation" | translate) }}</small>
+</div>

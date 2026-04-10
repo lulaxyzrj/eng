@@ -1,0 +1,86 @@
+version: 2
+
+models:
+  - name: stg_users_mssql
+    description: "Staging model for users from MSSQL source"
+    columns:
+      - name: USER_HK
+        description: "Hash key for user based on CPF"
+      - name: CPF
+        description: "Brazilian tax ID (business key)"
+      - name: LOAD_DTS
+        description: "Load timestamp"
+      - name: RECORD_SOURCE
+        description: "Source system identifier"
+
+  - name: stg_users_mongodb
+    description: "Staging model for users from MongoDB source"
+    columns:
+      - name: USER_HK
+        description: "Hash key for user based on CPF"
+      - name: CPF
+        description: "Brazilian tax ID (business key)"
+      - name: LOAD_DTS
+        description: "Load timestamp"
+      - name: RECORD_SOURCE
+        description: "Source system identifier"
+
+  - name: stg_drivers
+    description: "Staging model for drivers from PostgreSQL source"
+    columns:
+      - name: DRIVER_HK
+        description: "Hash key for driver based on license number"
+      - name: LICENSE_NUMBER
+        description: "Driver license number (business key)"
+      - name: LOAD_DTS
+        description: "Load timestamp"
+      - name: RECORD_SOURCE
+        description: "Source system identifier"
+
+  - name: stg_restaurants
+    description: "Staging model for restaurants from MySQL source"
+    columns:
+      - name: RESTAURANT_HK
+        description: "Hash key for restaurant based on CNPJ"
+      - name: CNPJ
+        description: "Brazilian business tax ID (business key)"
+      - name: LOAD_DTS
+        description: "Load timestamp"
+      - name: RECORD_SOURCE
+        description: "Source system identifier"
+
+  - name: stg_orders
+    description: "Staging model for orders from Kafka source"
+    columns:
+      - name: ORDER_HK
+        description: "Hash key for order"
+      - name: USER_HK
+        description: "Hash key for user"
+      - name: RESTAURANT_HK
+        description: "Hash key for restaurant"
+      - name: DRIVER_HK
+        description: "Hash key for driver"
+      - name: ORDER_USER_HK
+        description: "Hash key for order-user link"
+      - name: ORDER_RESTAURANT_HK
+        description: "Hash key for order-restaurant link"
+      - name: ORDER_DRIVER_HK
+        description: "Hash key for order-driver link"
+      - name: LOAD_DTS
+        description: "Load timestamp"
+      - name: RECORD_SOURCE
+        description: "Source system identifier"
+
+  - name: stg_status
+    description: "Staging model for order status from Kafka source"
+    columns:
+      - name: ORDER_HK
+        description: "Hash key for order"
+      - name: HASHDIFF
+        description: "Hash diff for satellite change detection"
+      - name: STATUS_TS_PARSED
+        description: "Parsed status timestamp"
+      - name: LOAD_DTS
+        description: "Load timestamp"
+      - name: RECORD_SOURCE
+        description: "Source system identifier"

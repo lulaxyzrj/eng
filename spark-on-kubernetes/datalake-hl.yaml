@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: "2025-09-22T19:33:38Z"
+  name: datalake-hl
+  namespace: deepstore
+  ownerReferences:
+  - apiVersion: minio.min.io/v2
+    blockOwnerDeletion: true
+    controller: true
+    kind: Tenant
+    name: datalake
+    uid: 1102799e-e39d-4410-8af1-de31fd0399e4
+  resourceVersion: "244096"
+  uid: 3625c619-f21f-4a47-9b85-445d58ab3371
+spec:
+  type: NodePort
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - name: http-minio
+    port: 9000
+    protocol: TCP
+    targetPort: 9000
+  publishNotReadyAddresses: true
+  selector:
+    v1.min.io/tenant: datalake
+  sessionAffinity: None
+status:
+  loadBalancer: {}

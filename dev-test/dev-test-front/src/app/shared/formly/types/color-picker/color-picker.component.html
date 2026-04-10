@@ -1,0 +1,13 @@
+<div class="form-group" [class.error]="showError">
+    <label *ngIf="to.label">
+        {{ to.label }}
+        <span *ngIf="to.required" class="ng-star-inserted">*</span>
+    </label>
+    <div>
+        <p-colorPicker 
+            appendTo="body" 
+            [formlyAttributes]="field"
+            [formControl]="formControl">
+        </p-colorPicker>
+    </div>
+</div>

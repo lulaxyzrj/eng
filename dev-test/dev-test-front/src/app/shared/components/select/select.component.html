@@ -1,0 +1,4 @@
+<select class="form-control" [(ngModel)]="selected" (change)="feedback()" name="status">
+    <option [ngValue]="undefined" hidden>{{defaultText}}</option>
+    <option *ngFor="let item of data" [ngValue]="item">{{item.value}}</option>
+</select>

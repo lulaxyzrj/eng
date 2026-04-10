@@ -1,0 +1,22 @@
+{
+    "kind": "kafka",
+    "description": "Digital Ocean Kafka development environment",
+    "config": {
+        "kind": "kafka",
+        "producerConfigs": {
+            "bootstrap.servers": "134.199.178.241:9094",
+            "key.serializer": "org.apache.kafka.common.serialization.StringSerializer",
+            "value.serializer": "io.shadowtraffic.kafka.serdes.JsonSerializer",
+            "acks": "all",
+            "retries": "3",
+            "batch.size": "16384",
+            "linger.ms": "5",
+            "buffer.memory": "33554432",
+            "compression.type": "snappy",
+            "max.in.flight.requests.per.connection": "5",
+            "enable.idempotence": "true",
+            "request.timeout.ms": "30000",
+            "delivery.timeout.ms": "120000"
+        }
+    }
+}

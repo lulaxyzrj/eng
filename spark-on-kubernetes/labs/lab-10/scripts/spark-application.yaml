@@ -1,0 +1,88 @@
+apiVersion: sparkoperator.k8s.io/v1beta2
+kind: SparkApplication
+metadata:
+  name: spark-lab10
+  namespace: processing
+spec:
+  type: Python
+  pythonVersion: "3"
+  mode: cluster
+  image: grudtnerv/spok:1.0.0
+  imagePullPolicy: Always
+  mainApplicationFile: "local:///repo/spark-on-kubernetes.git/labs/lab-10/scripts/spark-app4-2.py"
+  sparkConf:
+    spark.hadoop.fs.s3a.endpoint: "http://datalake-hl.deepstore:9000"
+    spark.hadoop.fs.s3a.path.style.access: "true"
+    spark.hadoop.fs.s3a.impl: "org.apache.hadoop.fs.s3a.S3AFileSystem"
+    spark.metrics.conf: "/etc/metrics/conf/metrics.properties"
+  arguments:
+    - "silver"
+    - "owshq-shadow-traffic-uber-eats/kafka/orders"
+    - "owshq-shadow-traffic-uber-eats/mysql/products"
+    - "owshq-shadow-traffic-uber-eats/mongodb/items"
+    - "s3a://owshq-shadow-traffic-uber-eats/parquet"
+  volumes:
+    - name: aux-dir
+      emptyDir: {}
+    - name: git-creds
+      secret:
+        secretName: git-ssh-secret 
+  sparkVersion: 3.5.3
+  timeToLiveSeconds: 30
+  restartPolicy:
+    type: OnFailure
+    onFailureRetries: 2
+    onFailureRetryInterval: 10
+    onSubmissionFailureRetries: 5
+    onSubmissionFailureRetryInterval: 10
+  driver:
+    cores: 1
+    memory: 1024m
+    serviceAccount: spark-operator-spark
+    envSecretKeyRefs:
+      AWS_ACCESS_KEY_ID:
+        name: minio-spark-secret
+        key: AWS_ACCESS_KEY_ID
+      AWS_SECRET_ACCESS_KEY:
+        name: minio-spark-secret
+        key: AWS_SECRET_ACCESS_KEY
+    secrets:
+      - name: git-creds
+        path: /etc/git-secret-init
+        secretType: Generic
+    volumeMounts:
+      - name: aux-dir
+        mountPath: /repo
+    initContainers:
+      - name: git-sync
+        image: k8s.gcr.io/git-sync/git-sync:v4.2.4
+        args:
+          - "--repo=git@github.com:owshq-mec/spark-on-kubernetes.git"
+          - "--root=/repo"
+          - "--ref=main"
+          - "--depth=2"
+          - "--one-time"
+          - "--ssh-key-file=/etc/git-secret-init/ssh"
+          - "--ssh-known-hosts-file=/etc/git-secret-init/known_hosts"
+        volumeMounts:
+          - name: aux-dir
+            mountPath: /repo
+          - name: git-creds-volume
+            mountPath: /etc/git-secret-init
+  executor:
+    instances: 2
+    cores: 1
+    memory: 1024m
+    envSecretKeyRefs:
+      AWS_ACCESS_KEY_ID:
+        name: minio-spark-secret
+        key: AWS_ACCESS_KEY_ID
+      AWS_SECRET_ACCESS_KEY:
+        name: minio-spark-secret
+        key: AWS_SECRET_ACCESS_KEY
+  monitoring:
+    exposeDriverMetrics: true
+    exposeExecutorMetrics: true
+    prometheus:
+      jmxExporterJar: /prometheus/jmx_prometheus_javaagent-0.11.0.jar
+      port: 8090

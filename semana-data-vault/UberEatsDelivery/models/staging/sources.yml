@@ -1,0 +1,57 @@
+version: 2
+
+sources:
+  - name: raw_data
+    description: "Raw UberEats data loaded from stage files"
+    database: UBEREATS
+    schema: RAW_DATA
+    tables:
+      - name: RAW_USERS_MSSQL
+        description: "Users data from MSSQL"
+        columns:
+          - name: cpf
+            description: "Brazilian tax ID - Business Key"
+            tests:
+              - not_null
+          - name: load_dts
+            description: "Load timestamp"
+
+      - name: RAW_USERS_MONGODB
+        description: "Users data from MongoDB"
+        columns:
+          - name: cpf
+            description: "Brazilian tax ID - Business Key"
+            tests:
+              - not_null
+
+      - name: RAW_DRIVERS
+        description: "Drivers data from PostgreSQL"
+        columns:
+          - name: license_number
+            description: "Driver license - Business Key"
+            tests:
+              - not_null
+
+      - name: RAW_RESTAURANTS
+        description: "Restaurants data from MySQL"
+        columns:
+          - name: cnpj
+            description: "Brazilian business tax ID - Business Key"
+            tests:
+              - not_null
+
+      - name: RAW_ORDERS
+        description: "Orders data from Kafka"
+        columns:
+          - name: order_id
+            description: "Order ID - Business Key"
+            tests:
+              - not_null
+
+      - name: RAW_STATUS
+        description: "Order status data from Kafka"
+        columns:
+          - name: order_id
+            description: "Order ID reference"
+            tests:
+              - not_null

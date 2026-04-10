@@ -1,0 +1,6 @@
+benner/
+taxAgent/
+venv/
+DHuO/
+minikube-linux-amd64
+**/terraform/

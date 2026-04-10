@@ -1,0 +1,64 @@
+# =============================================================================
+# Databricks Asset Bundle - UberEats Order Status Pipeline
+# =============================================================================
+# 
+# Usage:
+#   LOCAL DEV:  databricks bundle deploy -t dev
+#   CI/CD:      databricks bundle deploy -t dev-cicd --var="service_principal_id=xxx"
+#
+# =============================================================================
+
+bundle:
+  name: ubereats_order_status_01
+  databricks_cli_version: ">= 0.218.0"
+
+include:
+  - config/*.yml
+  - resources/**/*.yml
+
+# =============================================================================
+# TARGETS
+# =============================================================================
+
+targets:
+  # ---------------------------------------------------------------------------
+  # LOCAL DEVELOPMENT - each developer uses their own workspace root path
+  # ---------------------------------------------------------------------------
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: https://adb-194931476601578.18.azuredatabricks.net
+
+  # ---------------------------------------------------------------------------
+  # CI/CD DEVELOPMENT - shared deployment via Service Principal
+  # ---------------------------------------------------------------------------
+  dev-cicd:
+    workspace:
+      host: https://adb-194931476601578.18.azuredatabricks.net
+      root_path: /Shared/.bundle/${bundle.name}/dev
+    
+    run_as:
+      service_principal_name: ${var.service_principal_id}
+
+  # ---------------------------------------------------------------------------
+  # Silence the WARNING the bundle root path /Workspace/Shared/.bundle/ubereats_order_status/dev 
+  # is writable by all workspace users
+  #  permissions:
+  #    - group_name: users
+  #      level: CAN_MANAGE
+  # ---------------------------------------------------------------------------
+    
+    presets:
+      name_prefix: "[dev] "
+      pipelines_development: true
+      trigger_pause_status: PAUSED
+
+# =============================================================================
+# VARIABLES
+# =============================================================================
+
+variables:
+  service_principal_id:
+    description: "Application ID do Service Principal"
+    default: ""

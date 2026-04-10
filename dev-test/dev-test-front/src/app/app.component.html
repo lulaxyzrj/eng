@@ -1,0 +1,15 @@
+<nav class="navbar">
+  <div>
+    <a href="/">
+      <img src="../assets/img/logo.png" class="logo" />
+    </a>
+  </div>
+  <ul class="menu">
+    <li><a href="">Home</a></li>
+    <li><a href="/tasks">{{getTaskMenuLabel()}}</a></li>
+  </ul>
+</nav>
+
+<div class="main-content">
+  <router-outlet></router-outlet>
+</div>

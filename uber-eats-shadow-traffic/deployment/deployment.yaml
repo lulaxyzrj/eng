@@ -1,0 +1,75 @@
+---
+# Standard ShadowTraffic Deployment for Any Data Source
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: shadowtraffic
+  labels:
+    name: shadowtraffic
+    app: shadowtraffic
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shadowtraffic
+  namespace: shadowtraffic
+  labels:
+    app: shadowtraffic
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shadowtraffic
+  template:
+    metadata:
+      labels:
+        app: shadowtraffic
+    spec:
+      containers:
+        - name: shadowtraffic
+          image: shadowtraffic/shadowtraffic:latest
+          envFrom:
+            - secretRef:
+                name: shadowtraffic-license
+          env:
+            - name: SHADOWTRAFFIC_DEBUG
+              value: "true"
+            - name: JAVA_OPTS
+              value: "-Xmx1g -Xms512m"
+          volumeMounts:
+            - name: config-volume
+              mountPath: /home/config
+              readOnly: true
+          command: ["java", "-jar", "/home/shadowtraffic.jar"]
+          args: ["--config", "/home/config/config.json"]
+          resources: 
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+          # No health checks - ShadowTraffic is a continuous data generator
+      volumes:
+        - name: config-volume
+          configMap:
+            name: shadowtraffic-config
+      restartPolicy: Always
+---
+# Optional: Service for monitoring/debugging
+apiVersion: v1
+kind: Service
+metadata:
+  name: shadowtraffic-service
+  namespace: shadowtraffic
+  labels:
+    app: shadowtraffic
+spec:
+  selector:
+    app: shadowtraffic
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+  type: ClusterIP

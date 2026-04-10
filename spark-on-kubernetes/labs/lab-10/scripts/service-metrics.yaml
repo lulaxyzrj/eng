@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: operator-metrics
+  namespace: processing
+  labels:
+    app: spark-operator
+spec:
+  selector:
+    app.kubernetes.io/name: spark-operator
+  ports:
+    - name: metrics
+      protocol: TCP
+      port: 8080
+      targetPort: metrics
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: job-metrics
+  namespace: processing
+  labels:
+    spark-role: driver 
+    sparkoperator.k8s.io/launched-by-spark-operator: "true" 
+spec:
+  selector:
+    spark-role: driver 
+  ports:
+    - name: metrics
+      protocol: TCP
+      port: 8090
+      targetPort: 8090
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webhook-metrics
+  namespace: processing
+  labels:
+    spark-role: driver 
+    sparkoperator.k8s.io/launched-by-spark-operator: "true" 
+spec:
+  selector:
+    app.kubernetes.io/component: webhook
+    app.kubernetes.io/instance: spark-operator
+    app.kubernetes.io/name: spark-operator
+  ports:
+    - name: metrics
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP

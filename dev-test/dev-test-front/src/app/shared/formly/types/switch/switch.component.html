@@ -1,0 +1,7 @@
+<div class="form-group" [class.error]="showError">
+  <p-inputSwitch [formlyAttributes]="field" [formControl]="formControl"></p-inputSwitch>
+  <label>
+    {{ to.label }}
+    <span *ngIf="to.required" class="ng-star-inserted">*</span>
+  </label>
+</div>

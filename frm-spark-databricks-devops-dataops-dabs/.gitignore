@@ -1,0 +1,7 @@
+
+.databricks
+.venv
+.vscode
+backup
+.claude
+.env

@@ -1,0 +1,7 @@
+# Generated Output Files (Sensitive)
+phase-02-unity-catalog/phase01-outputs.json
+phase01-outputs.json
+
+# Ignore Phase 02 variables (contains Account ID)
+phase-02-unity-catalog/terraform.tfvars
+/phase-02-unity-catalog/terraform.tfvars

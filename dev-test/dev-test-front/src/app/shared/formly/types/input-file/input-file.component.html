@@ -1,0 +1,10 @@
+<div class="input-group">
+    <div class="input-group-prepend">
+        <span class="input-group-text">Upload&nbsp;<span *ngIf="to.required" class="ng-star-inserted">*</span></span>
+    </div>
+    <div class="custom-file">
+        <input type="file" [formControl]="formControl" [formlyAttributes]="field" class="custom-file-input"
+            id="inputGroupFile" accept="{{ to.type }}">
+        <label class="custom-file-label" for="inputGroupFile">{{ to.label }}</label>
+    </div>
+</div>

@@ -1,0 +1,28 @@
+.custom-label {
+    color: #3b3b3b;
+}
+
+:host ::ng-deep .ui-colorpicker {
+    display: block !important;
+}
+
+:host ::ng-deep .ui-inputtext {
+    width: 100% !important;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.button-panel {
+    display: inline-block;
+}
+
+:host ::ng-deep .ui-togglebutton {
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+    min-width: 80px;
+    min-height: 35px;
+    color: #333;
+    background-color: white;
+    border: 1px solid #adadad;
+}

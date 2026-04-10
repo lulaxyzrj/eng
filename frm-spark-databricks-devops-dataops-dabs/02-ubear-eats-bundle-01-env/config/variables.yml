@@ -1,0 +1,38 @@
+# =============================================================================
+# Variables Configuration
+# =============================================================================
+# Default values for all targets.
+# Override per target in databricks.yml (targets.<target>.variables)
+# Or via CLI: databricks bundle deploy -t dev --var="catalog=ubereats_test"
+# =============================================================================
+
+variables:
+  # ---------------------------------------------------------------------------
+  # Storage Configuration
+  # ---------------------------------------------------------------------------
+  storage_account:
+    description: "Azure Storage Account name for ADLS Gen2"
+    default: "adlsubereatsdevsji8"
+  
+  landing_container:
+    description: "Container name for landing zone"
+    default: "landing"
+
+  # ---------------------------------------------------------------------------
+  # Unity Catalog Configuration
+  # ---------------------------------------------------------------------------
+  catalog:
+    description: "Unity Catalog name"
+    default: "ubereats_dev"
+  
+  bronze_schema:
+    description: "Bronze layer schema"
+    default: "bronze"
+  
+  silver_schema:
+    description: "Silver layer schema"
+    default: "silver"
+  
+  gold_schema:
+    description: "Gold layer schema"
+    default: "gold"

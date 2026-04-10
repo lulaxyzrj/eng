@@ -1,0 +1,23 @@
+apiVersion: sparkoperator.k8s.io/v1beta2
+kind: SparkApplication
+metadata:
+  name: spark-lab-2
+  namespace: processing
+spec:
+  type: Python
+  pythonVersion: "3"
+  mode: cluster
+  image: grudtnerv/spok:1.0.0
+  imagePullPolicy: Always
+  mainApplicationFile: "local:///app/spark-app1.py"
+  sparkVersion: 3.5.3
+  timeToLiveSeconds: 30
+  driver:
+    cores: 1
+    memory: 500m
+    serviceAccount: spark-operator-spark
+  executor:
+    instances: 2
+    cores: 1
+    memory: 1024m
+  

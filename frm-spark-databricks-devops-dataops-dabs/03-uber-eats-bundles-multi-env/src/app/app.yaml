@@ -1,0 +1,9 @@
+command:
+  - streamlit
+  - run
+  - app.py
+
+env:
+  # Warehouse ID injected from resource binding at runtime
+  - name: DATABRICKS_WAREHOUSE_ID
+    valueFrom: sql_warehouse

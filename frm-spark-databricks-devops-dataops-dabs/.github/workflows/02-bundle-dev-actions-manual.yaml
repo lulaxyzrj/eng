@@ -1,0 +1,52 @@
+name: 'Testing Bundle Dev Actions [Manual-02-bundle-dev]'
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        default: 'validate'
+        type: choice
+        options:
+          - validate
+          - deploy
+          - destroy
+
+env:
+  ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+  ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+  ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+  DATABRICKS_HOST: https://adb-194931476601578.18.azuredatabricks.net
+  DAB_DIR: "02-ubear-eats-bundle-01-env"
+
+jobs:
+  dab:
+    name: 'DAB ${{ github.event.inputs.action }}'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: databricks/setup-cli@main
+
+      - name: Validate
+        working-directory: ${{ env.DAB_DIR }}
+        run: |
+          databricks bundle validate -t dev-cicd \
+            --var="service_principal_id=${{ secrets.ARM_CLIENT_ID }}"
+
+      - name: Deploy
+        if: github.event.inputs.action == 'deploy'
+        working-directory: ${{ env.DAB_DIR }}
+        run: |
+          databricks bundle deploy -t dev-cicd \
+            --var="service_principal_id=${{ secrets.ARM_CLIENT_ID }}"
+
+      - name: Destroy
+        if: github.event.inputs.action == 'destroy'
+        working-directory: ${{ env.DAB_DIR }}
+        run: |
+          databricks bundle destroy -t dev-cicd \
+            --var="service_principal_id=${{ secrets.ARM_CLIENT_ID }}" \
+            --auto-approve

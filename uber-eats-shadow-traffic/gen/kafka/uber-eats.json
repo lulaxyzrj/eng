@@ -1,0 +1,417 @@
+{
+  "generators": [
+    {
+      "topic": "kafka-orders",
+      "vars": {
+        "item_count": {
+          "_gen": "uniformDistribution",
+          "bounds": [
+            1,
+            5
+          ],
+          "decimals": 0
+        },
+        "avg_price": {
+          "_gen": "uniformDistribution",
+          "bounds": [
+            10.0,
+            35.0
+          ],
+          "decimals": 2
+        }
+      },
+      "value": {
+        "order_id": {
+          "_gen": "uuid"
+        },
+        "driver_key": {
+          "_gen": "lookup",
+          "topic": "kafka-drivers",
+          "path": [
+            "value",
+            "license_number"
+          ]
+        },
+        "order_date": {
+          "_gen": "formatDateTime",
+          "ms": {
+            "_gen": "uniformDistribution",
+            "bounds": [
+              1609459200000,
+              {
+                "_gen": "now"
+              }
+            ]
+          },
+          "format": "yyyy-MM-dd HH:mm:ss.SSSSSS"
+        },
+        "total_amount": {
+          "_gen": "math",
+          "expr": "item_count * avg_price",
+          "format": "#.##",
+          "names": {
+            "item_count": {
+              "_gen": "var",
+              "var": "item_count"
+            },
+            "avg_price": {
+              "_gen": "var",
+              "var": "avg_price"
+            }
+          }
+        },
+        "payment_key": {
+          "_gen": "uuid"
+        },
+        "dt_current_timestamp": {
+          "_gen": "formatDateTime",
+          "ms": {
+            "_gen": "now"
+          },
+          "format": "yyyy-MM-dd HH:mm:ss.SSS"
+        }
+      }
+    },
+    {
+      "topic": "kafka-drivers",
+      "value": {
+        "driver_id": {
+          "_gen": "sequentialInteger",
+          "startingFrom": 1
+        },
+        "uuid": {
+          "_gen": "uuid"
+        },
+        "first_name": {
+          "_gen": "string",
+          "expr": "#{Name.firstName}",
+          "locale": [
+            "pt",
+            "BR"
+          ]
+        },
+        "last_name": {
+          "_gen": "string",
+          "expr": "#{Name.lastName}",
+          "locale": [
+            "pt",
+            "BR"
+          ]
+        },
+        "date_birth": {
+          "_gen": "formatDateTime",
+          "ms": {
+            "_gen": "uniformDistribution",
+            "bounds": [
+              -2524608000000,
+              7258118400000
+            ]
+          },
+          "format": "yyyy-MM-dd"
+        },
+        "city": {
+          "_gen": "string",
+          "expr": "#{Address.city}",
+          "locale": [
+            "pt",
+            "BR"
+          ]
+        },
+        "country": {
+          "_gen": "oneOf",
+          "choices": [
+            "BR"
+          ]
+        },
+        "phone_number": {
+          "_gen": "string",
+          "expr": "#{PhoneNumber.phoneNumber}",
+          "locale": [
+            "pt",
+            "BR"
+          ]
+        },
+        "license_number": {
+          "_gen": "string",
+          "expr": "#{bothify '??#######'}"
+        },
+        "vehicle_type": {
+          "_gen": "oneOf",
+          "choices": [
+            "Motorcycle",
+            "Car",
+            "Bicycle",
+            "Scooter",
+            "E-Bike",
+            "Walk"
+          ]
+        },
+        "vehicle_make": {
+          "_gen": "string",
+          "expr": "#{Company.name}",
+          "locale": [
+            "pt",
+            "BR"
+          ]
+        },
+        "vehicle_model": {
+          "_gen": "string",
+          "expr": "#{Commerce.productName}",
+          "locale": [
+            "pt",
+            "BR"
+          ]
+        },
+        "vehicle_year": {
+          "_gen": "uniformDistribution",
+          "bounds": [
+            1980,
+            2024
+          ],
+          "decimals": 0
+        },
+        "dt_current_timestamp": {
+          "_gen": "formatDateTime",
+          "ms": {
+            "_gen": "now"
+          },
+          "format": "yyyy-MM-dd HH:mm:ss.SSS"
+        }
+      }
+    },
+    {
+      "topic": "kafka-route",
+      "vars": {
+        "start_ts_ms": {
+          "_gen": "uniformDistribution",
+          "bounds": [
+            1609459200000,
+            {
+              "_gen": "now"
+            }
+          ],
+          "decimals": 0
+        },
+        "travel_time_ms": {
+          "_gen": "uniformDistribution",
+          "bounds": [
+            300000,
+            2700000
+          ],
+          "decimals": 0
+        }
+      },
+      "value": {
+        "route_id": {
+          "_gen": "uuid"
+        },
+        "order_id": {
+          "_gen": "lookup",
+          "topic": "kafka-orders",
+          "path": [
+            "value",
+            "order_id"
+          ]
+        },
+        "driver_id": {
+          "_gen": "lookup",
+          "topic": "kafka-drivers",
+          "path": [
+            "value",
+            "license_number"
+          ]
+        },
+        "start_lat": {
+          "_gen": "uniformDistribution",
+          "bounds": [
+            -23.60,
+            -23.55
+          ],
+          "decimals": 6
+        },
+        "start_lon": {
+          "_gen": "uniformDistribution",
+          "bounds": [
+            -46.65,
+            -46.60
+          ],
+          "decimals": 6
+        },
+        "end_lat": {
+          "_gen": "uniformDistribution",
+          "bounds": [
+            -23.60,
+            -23.55
+          ],
+          "decimals": 6
+        },
+        "end_lon": {
+          "_gen": "uniformDistribution",
+          "bounds": [
+            -46.65,
+            -46.60
+          ],
+          "decimals": 6
+        },
+        "distance_km": {
+          "_gen": "uniformDistribution",
+          "bounds": [
+            0.5,
+            10.0
+          ],
+          "decimals": 2
+        },
+        "estimated_duration_min": {
+          "_gen": "uniformDistribution",
+          "bounds": [
+            5,
+            45
+          ],
+          "decimals": 0
+        },
+        "start_time": {
+          "_gen": "formatDateTime",
+          "ms": {
+            "_gen": "var",
+            "var": "start_ts_ms"
+          },
+          "format": "yyyy-MM-dd HH:mm:ss"
+        },
+        "end_time": {
+          "_gen": "formatDateTime",
+          "ms": {
+            "_gen": "math",
+            "expr": "start_ts_ms + travel_time_ms",
+            "names": {
+              "start_ts_ms": {
+                "_gen": "var",
+                "var": "start_ts_ms"
+              },
+              "travel_time_ms": {
+                "_gen": "var",
+                "var": "travel_time_ms"
+              }
+            }
+          },
+          "format": "yyyy-MM-dd HH:mm:ss"
+        },
+        "dt_current_timestamp": {
+          "_gen": "formatDateTime",
+          "ms": {
+            "_gen": "now"
+          },
+          "format": "yyyy-MM-dd HH:mm:ss.SSS"
+        }
+      }
+    },
+    {
+      "topic": "kafka-gps",
+      "fork": {
+        "key": {
+          "_gen": "lookup",
+          "topic": "kafka-route",
+          "path": [
+            "value",
+            "order_id"
+          ]
+        },
+        "maxForks": 20
+      },
+      "vars": {
+        "gps_point": {
+          "_gen": "geoWander",
+          "boundingBox": [
+            [
+              -23.6,
+              -46.7
+            ],
+            [
+              -23.5,
+              -46.6
+            ]
+          ],
+          "speed": 15,
+          "scale": 0.02
+        }
+      },
+      "value": {
+        "gps_id": {
+          "_gen": "uuid"
+        },
+        "order_id": {
+          "_gen": "var",
+          "var": "forkKey"
+        },
+        "lat": {
+          "_gen": "var",
+          "var": "gps_point",
+          "path": [
+            "latitude"
+          ]
+        },
+        "lon": {
+          "_gen": "var",
+          "var": "gps_point",
+          "path": [
+            "longitude"
+          ]
+        },
+        "speed_kph": 15,
+        "direction_deg": {
+          "_gen": "var",
+          "var": "gps_point",
+          "path": [
+            "heading"
+          ]
+        },
+        "duration_ms": {
+          "_gen": "var",
+          "var": "gps_point",
+          "path": [
+            "duration"
+          ]
+        },
+        "accuracy_m": {
+          "_gen": "uniformDistribution",
+          "bounds": [
+            5,
+            50
+          ],
+          "decimals": 1
+        },
+        "altitude": {
+          "_gen": "uniformDistribution",
+          "bounds": [
+            700,
+            780
+          ],
+          "decimals": 1
+        },
+        "timestamp": {
+          "_gen": "formatDateTime",
+          "ms": {
+            "_gen": "now"
+          },
+          "format": "yyyy-MM-dd HH:mm:ss.SSS"
+        },
+        "dt_current_timestamp": {
+          "_gen": "formatDateTime",
+          "ms": {
+            "_gen": "now"
+          },
+          "format": "yyyy-MM-dd HH:mm:ss.SSS"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "kafka": {
+      "kind": "kafka",
+      "producerConfigs": {
+        "bootstrap.servers": "134.199.178.241:9094",
+        "key.serializer": "io.shadowtraffic.kafka.serdes.JsonSerializer",
+        "value.serializer": "io.shadowtraffic.kafka.serdes.JsonSerializer"
+      }
+    }
+  }
+}

@@ -1,0 +1,102 @@
+name: 'Phase 02 - Unity Catalog (Manual Trigger)'
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: "Type 'APPLY' to execute terraform apply. Otherwise, runs plan only."
+        required: true
+        default: 'PLAN_ONLY'
+        type: string
+
+env:
+  ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+  ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+  ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+  # Backend config for Phase 02 itself
+  TF_BACKEND_RG: "ubereats-tfstate-rg"
+  TF_BACKEND_SA: ${{ secrets.TF_BACKEND_SA }}
+  TF_BACKEND_CONTAINER: "tfstate"
+  WORKING_DIR: "terraform-infra-cicd/phase-02-unity-catalog"
+
+jobs:
+  terraform-deploy:
+    name: 'Terraform Manual Run'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Necessário para baixar o state da Phase 01 do Azure Storage
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: '{"clientId":"${{ secrets.ARM_CLIENT_ID }}","clientSecret":"${{ secrets.ARM_CLIENT_SECRET }}","subscriptionId":"${{ secrets.ARM_SUBSCRIPTION_ID }}","tenantId":"${{ secrets.ARM_TENANT_ID }}"}'
+
+      # Lógica crucial: Busca outputs da Phase 01 para injetar na Phase 02
+      - name: Fetch Phase 01 State & Outputs
+        id: fetch_state
+        run: |
+          echo "⬇️ Downloading Phase 01 State..."
+          
+          # Tenta baixar o state. Se falhar, o script para aqui.
+          az storage blob download \
+            --account-name ${{ secrets.TF_BACKEND_SA }} \
+            --container-name $TF_BACKEND_CONTAINER \
+            --name "phase-01-azure-infra.tfstate" \
+            --file /tmp/phase01.tfstate \
+            --auth-mode login
+
+          echo "✅ State downloaded. Parsing outputs..."
+          
+          # Extrai as URLs usando JQ
+          DEV_URL=$(cat /tmp/phase01.tfstate | jq -r '.outputs.dev_workspace_url.value')
+          PROD_URL=$(cat /tmp/phase01.tfstate | jq -r '.outputs.prod_workspace_url.value')
+
+          # Validação simples para garantir que não estão vazios/nulos
+          if [ "$DEV_URL" == "null" ] || [ -z "$DEV_URL" ]; then
+            echo "❌ Error: Could not find dev_workspace_url in Phase 01 state."
+            exit 1
+          fi
+
+          echo "🔗 Found Dev Workspace: $DEV_URL"
+          echo "🔗 Found Prod Workspace: $PROD_URL"
+
+          # Injeta como Variáveis de Ambiente do Terraform para os próximos passos
+          # TF_VAR_nome_da_var mapeia automaticamente para variable "nome_da_var" no Terraform
+          echo "TF_VAR_dev_workspace_url=$DEV_URL" >> $GITHUB_ENV
+          echo "TF_VAR_prod_workspace_url=$PROD_URL" >> $GITHUB_ENV
+          echo "TF_VAR_databricks_account_id=${{ secrets.DATABRICKS_ACCOUNT_ID }}" >> $GITHUB_ENV
+          echo "TF_VAR_backend_resource_group=$TF_BACKEND_RG" >> $GITHUB_ENV
+          echo "TF_VAR_backend_storage_account=${{ secrets.TF_BACKEND_SA }}" >> $GITHUB_ENV
+          echo "TF_VAR_backend_container=$TF_BACKEND_CONTAINER" >> $GITHUB_ENV
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.0
+
+      - name: Terraform Init
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          terraform init \
+            -backend-config="resource_group_name=$TF_BACKEND_RG" \
+            -backend-config="storage_account_name=$TF_BACKEND_SA" \
+            -backend-config="container_name=$TF_BACKEND_CONTAINER"
+
+      - name: Terraform Validate
+        working-directory: ${{ env.WORKING_DIR }}
+        run: terraform validate
+
+      # Plan roda sempre (Dry Run)
+      - name: Terraform Plan
+        working-directory: ${{ env.WORKING_DIR }}
+        run: terraform plan -out=tfplan
+
+      # Apply roda apenas com confirmação explícita
+      - name: Terraform Apply
+        if: inputs.confirmation == 'APPLY'
+        working-directory: ${{ env.WORKING_DIR }}
+        run: terraform apply -auto-approve tfplan

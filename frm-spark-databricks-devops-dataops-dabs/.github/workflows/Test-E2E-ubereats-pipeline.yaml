@@ -1,0 +1,120 @@
+name: E2E -Testing Pipeline Dev Actions
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: e2e-ubereats-dev-cicd
+  cancel-in-progress: false
+
+env:
+  ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+  ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+  ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+  DATABRICKS_HOST: https://adb-194931476601578.18.azuredatabricks.net
+  DAB_DIR: '03-uber-eats-bundles-multi-env'
+  TARGET: 'dev-cicd'
+
+jobs:
+  unit-tests:
+    name: 1. Unit Tests
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: ${{ env.DAB_DIR }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r tests/requirements.txt
+
+      - name: Run unit tests
+        run: |
+          python -m pytest tests/unit -v --tb=short
+
+  validate:
+    name: 2. Bundle Validate
+    runs-on: ubuntu-latest
+    needs: unit-tests
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Databricks CLI
+        uses: databricks/setup-cli@main
+
+      - name: Validate Bundle
+        working-directory: ${{ env.DAB_DIR }}
+        run: |
+          databricks bundle validate -t ${{ env.TARGET }} \
+            --var="service_principal_id=${{ secrets.ARM_CLIENT_ID }}"
+
+  deploy:
+    name: 3. Deploy Bundle
+    runs-on: ubuntu-latest
+    needs: validate
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Databricks CLI
+        uses: databricks/setup-cli@main
+
+      - name: Deploy Bundle
+        working-directory: ${{ env.DAB_DIR }}
+        run: |
+          echo "🚀 Deploying bundle to ${{ env.TARGET }}..."
+          databricks bundle deploy -t ${{ env.TARGET }} \
+            --var="service_principal_id=${{ secrets.ARM_CLIENT_ID }}"
+
+  run-pipeline:
+    name: 4. Run Pipeline (E2E)
+    runs-on: ubuntu-latest
+    needs: deploy
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Databricks CLI
+        uses: databricks/setup-cli@main
+
+      - name: Run Order Status Pipeline
+        working-directory: ${{ env.DAB_DIR }}
+        run: |
+          echo "🌊 Triggering Order Status Pipeline..."
+          databricks bundle run -t ${{ env.TARGET }} order_status_pipeline \
+            --var="service_principal_id=${{ secrets.ARM_CLIENT_ID }}"
+
+  destroy:
+    name: 5. Destroy Bundle (Cleanup)
+    runs-on: ubuntu-latest
+    needs: run-pipeline
+    if: always()
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Databricks CLI
+        uses: databricks/setup-cli@main
+
+      - name: Destroy Bundle
+        working-directory: ${{ env.DAB_DIR }}
+        run: |
+          echo "🧹 Cleaning up ${{ env.TARGET }}..."
+          databricks bundle destroy -t ${{ env.TARGET }} \
+            --var="service_principal_id=${{ secrets.ARM_CLIENT_ID }}" \
+            --auto-approve

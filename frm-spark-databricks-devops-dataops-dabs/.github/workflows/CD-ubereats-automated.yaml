@@ -1,0 +1,89 @@
+name: CD - UberEats Bundle (Prod)
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main # only trigger on PRs merged into main
+    paths:
+      - '03-uber-eats-bundles-multi-env/**'
+
+env:
+  ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+  ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+  ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+  DATABRICKS_HOST: https://adb-194931476601578.18.azuredatabricks.net
+  DAB_DIR: '03-uber-eats-bundles-multi-env'
+
+jobs:
+  unit-tests:
+    name: 1. Unit Tests
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+
+    defaults:
+      run:
+        working-directory: ${{ env.DAB_DIR }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r tests/requirements.txt
+
+      - name: Run unit tests
+        run: |
+          python -m pytest tests/unit -v --tb=short
+
+  validate:
+    name: 2. Bundle Validate
+    runs-on: ubuntu-latest
+    needs: unit-tests
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Databricks CLI
+        uses: databricks/setup-cli@main
+
+      - name: Validate Bundle
+        working-directory: ${{ env.DAB_DIR }}
+        run: |
+          echo "🔍 Validating bundle for PROD..."
+          databricks bundle validate -t prod \
+            --var="service_principal_id=${{ secrets.ARM_CLIENT_ID }}"
+
+  deploy:
+    name: 3. Deploy to Production
+    runs-on: ubuntu-latest
+    needs: validate
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Databricks CLI
+        uses: databricks/setup-cli@main
+
+      - name: Deploy Bundle
+        working-directory: ${{ env.DAB_DIR }}
+        run: |
+          echo "🚀 Deploying bundle to PROD..."
+          databricks bundle deploy -t prod \
+            --var="service_principal_id=${{ secrets.ARM_CLIENT_ID }}"
+
+      - name: Start Dashboard App
+        working-directory: ${{ env.DAB_DIR }}
+        run: |
+          echo "📊 Starting Dashboard App..."
+          databricks bundle run -t prod ubereats_dashboard \
+            --var="service_principal_id=${{ secrets.ARM_CLIENT_ID }}"

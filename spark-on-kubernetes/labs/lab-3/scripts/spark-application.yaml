@@ -1,0 +1,33 @@
+apiVersion: sparkoperator.k8s.io/v1beta2
+kind: SparkApplication
+metadata:
+  name: spark-lab3
+  namespace: processing
+spec:
+  type: Python
+  pythonVersion: "3"
+  mode: cluster
+  image: grudtnerv/spok:1.0.0
+  imagePullPolicy: Always
+  mainApplicationFile: "local:///app/spark-app2-1.py"
+  # mainApplicationFile: "local:///app/spark-app2-2.py"
+  arguments:
+     - "orders"
+     - "s3a://owshq-shadow-traffic-uber-eats"
+     - "s3a://owshq-shadow-traffic-uber-eats/parquet"
+    #- "" #ou: todos, orders, products, items
+    #- "owshq-shadow-traffic-uber-eats/kafka/orders"
+    #- "owshq-shadow-traffic-uber-eats/mysql/products"
+    #- "owshq-shadow-traffic-uber-eats/mongodb/items"
+    #- "s3a://owshq-shadow-traffic-uber-eats/parquet"
+  sparkVersion: 3.5.3
+  timeToLiveSeconds: 30
+  driver:
+    cores: 1
+    memory: 500m
+    serviceAccount: spark-operator-spark
+  executor:
+    instances: 2
+    cores: 1
+    memory: 1024m
+  

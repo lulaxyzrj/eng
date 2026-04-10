@@ -1,0 +1,17 @@
+{
+    "kind": "postgres",
+    "description": "PostgreSQL development database",
+    "config": {
+        "kind": "jdbc",
+        "connectionConfigs": {
+            "jdbcUrl": "jdbc:postgresql://localhost:5432/shadowtraffic",
+            "username": "postgres",
+            "password": "password",
+            "driverClassName": "org.postgresql.Driver"
+        },
+        "batchConfigs": {
+            "batchSize": 1000,
+            "flushIntervalMs": 5000
+        }
+    }
+}

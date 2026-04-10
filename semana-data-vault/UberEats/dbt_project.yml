@@ -1,0 +1,22 @@
+name: 'uber_eats_dv'
+version: '1.0.0'
+config-version: 2
+
+profile: 'uber_eats_dv'
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+models:
+  uber_eats_dv:
+    staging:
+      +schema: stg
+      +materialized: view
+    raw_vault:
+      +schema: dv_raw
+      +materialized: table

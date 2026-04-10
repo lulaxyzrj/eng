@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: minio-tenant
+  namespace: gitops
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: 'git@github.com:owshq-mec/spark-on-kubernetes.git'
+    path: src/helm-charts/tenant
+    targetRevision: main
+    helm:
+      valueFiles:
+        - values.yaml
+  destination:
+      namespace: deepstore
+      server: 'https://kubernetes.default.svc'
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=background   # Deleta em background
+      - PruneLast=true # Garante que a remoção ocorra no final da sync
+    automated:
+      prune: true
+      selfHeal: true

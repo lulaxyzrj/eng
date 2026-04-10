@@ -1,0 +1,60 @@
+apiVersion: sparkoperator.k8s.io/v1beta2
+kind: SparkApplication
+metadata:
+  name: spark-lab12
+  namespace: processing
+spec:
+  type: Python
+  pythonVersion: "3"
+  mode: cluster
+  image: grudtnerv/spok:1.0.0
+  imagePullPolicy: Always
+  mainApplicationFile: "local:///app/spark-app4-2.py"
+  sparkConf:
+    spark.hadoop.fs.s3a.endpoint: "http://datalake-hl.deepstore:9000"
+    spark.hadoop.fs.s3a.path.style.access: "true"
+    spark.hadoop.fs.s3a.impl: "org.apache.hadoop.fs.s3a.S3AFileSystem"
+    spark.metrics.conf: "/etc/metrics/conf/metrics.properties"
+  arguments:
+    - "silver"
+    - "owshq-shadow-traffic-uber-eats/kafka/orders"
+    - "owshq-shadow-traffic-uber-eats/mysql/products"
+    - "owshq-shadow-traffic-uber-eats/mongodb/items"
+    - "s3a://owshq-shadow-traffic-uber-eats/parquet"
+  sparkVersion: 3.5.3
+  timeToLiveSeconds: 30
+  restartPolicy:
+    type: Never
+  driver:
+    cores: 1
+    memory: 1024m
+    serviceAccount: spark-operator-spark
+    envSecretKeyRefs:
+      AWS_ACCESS_KEY_ID:
+        name: minio-spark-secret
+        key: AWS_ACCESS_KEY_ID
+      AWS_SECRET_ACCESS_KEY:
+        name: minio-spark-secret
+        key: AWS_SECRET_ACCESS_KEY
+  executor:
+    instances: 1
+    cores: 1
+    memory: 1024m
+    envSecretKeyRefs:
+      AWS_ACCESS_KEY_ID:
+        name: minio-spark-secret
+        key: AWS_ACCESS_KEY_ID
+      AWS_SECRET_ACCESS_KEY:
+        name: minio-spark-secret
+        key: AWS_SECRET_ACCESS_KEY
+  monitoring:
+    exposeDriverMetrics: true
+    exposeExecutorMetrics: true
+    prometheus:
+      jmxExporterJar: /prometheus/jmx_prometheus_javaagent-0.11.0.jar
+      port: 8090
+  dynamicAllocation:
+    enabled: true
+    initialExecutors: 2
+    maxExecutors: 8
+    minExecutors: 2

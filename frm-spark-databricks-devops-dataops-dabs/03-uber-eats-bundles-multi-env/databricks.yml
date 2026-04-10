@@ -1,0 +1,92 @@
+# =============================================================================
+# Databricks Asset Bundle - UberEats Order Status Pipeline
+# =============================================================================
+# 
+# Usage:
+#   LOCAL DEV:  databricks bundle deploy -t dev
+#   CI/CD:      databricks bundle deploy -t dev-cicd --var="service_principal_id=xxx"
+#
+# =============================================================================
+
+bundle:
+  name: ubereats_order_status_final
+  databricks_cli_version: ">= 0.218.0"
+
+include:
+  - config/*.yml
+  - resources/**/*.yml
+
+# =============================================================================
+# TARGETS
+# =============================================================================
+
+targets:
+  # ---------------------------------------------------------------------------
+  # LOCAL DEVELOPMENT - each developer uses their own workspace root path
+  # ---------------------------------------------------------------------------
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: https://adb-194931476601578.18.azuredatabricks.net
+
+  # ---------------------------------------------------------------------------
+  # CI/CD DEVELOPMENT - shared deployment via Service Principal
+  # ---------------------------------------------------------------------------
+  dev-cicd:
+    workspace:
+      host: https://adb-194931476601578.18.azuredatabricks.net
+      root_path: /Shared/.bundle/${bundle.name}/dev
+    
+    run_as:
+      service_principal_name: ${var.service_principal_id}
+
+  # ---------------------------------------------------------------------------
+  # Silence the WARNING the bundle root path /Workspace/Shared/.bundle/ubereats_order_status/dev 
+  # is writable by all workspace users
+  #  permissions:
+  #    - group_name: users
+  #      level: CAN_MANAGE
+  # ---------------------------------------------------------------------------
+    
+    presets:
+      name_prefix: "[${bundle.target}]"
+
+  # ---------------------------------------------------------------------------
+  # [PROD] PRODUCTION ENVIRONMENT
+  # ---------------------------------------------------------------------------
+
+  prod:
+    # mode: Here really should be 'production' but for demo purposes we keep 'development'
+    
+    workspace:
+      host: https://adb-3493878605644650.10.azuredatabricks.net
+      root_path: /Shared/.bundle/${bundle.name}/prod
+    
+    run_as:
+      service_principal_name: ${var.service_principal_id}
+
+    # -------------------------------------------------------------------------
+    # PROD VARIABLE OVERRIDES
+    # These override the defaults in config/variables.yml
+    # -------------------------------------------------------------------------
+    variables:
+      catalog: "ubereats_prod"                 # Production Catalog
+      storage_account: "adlsubereatsprodsji8"  # Production Storage Account
+      warehouse_id: "20b5fe1254385a96"        # Production SQL Warehouse ID for the App
+
+    presets:
+      name_prefix: "[${bundle.target}]"
+
+    # -------------------------------------------------------------------------
+    # PROD RESOURCE CONFIGURATION
+    # We override the pipeline key to enforce Production Mode
+    # -------------------------------------------------------------------------
+    resources:
+      pipelines:
+        order_status_pipeline:
+          continuous: true         # By the default will be false carefull here with costs
+    #      photon: true            # Use Photon for Prod
+    #      channel: CURRENT
+
+

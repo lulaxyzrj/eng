@@ -1,0 +1,11 @@
+# Dev Hero - Python Typing Game
+# No external dependencies required - uses only Python standard library
+
+# Python 3.6+ required
+# Standard library modules used:
+# - random
+# - time
+# - sys
+# - os
+# - unittest (for tests)
+

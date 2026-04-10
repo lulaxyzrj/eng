@@ -1,0 +1,67 @@
+name: CI - UberEats Bundle
+
+on:
+  push:
+    branches:
+      - '**'
+    paths:
+      - '03-uber-eats-bundles-multi-env/**'
+      - '.github/workflows/CI-ubereats-automated.yaml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '03-uber-eats-bundles-multi-env/**'
+
+env:
+  ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+  ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+  ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+  DATABRICKS_HOST: https://adb-194931476601578.18.azuredatabricks.net
+  DAB_DIR: '03-uber-eats-bundles-multi-env'
+
+jobs:
+  unit-tests:
+    name: Unit Tests (Bronze Layer)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    
+    defaults:
+      run:
+        working-directory: ${{ env.DAB_DIR }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r tests/requirements.txt
+
+      - name: Run unit tests
+        run: |
+          python -m pytest tests/unit -v --tb=short
+
+  validate:
+    name: Bundle Validate
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Databricks CLI
+        uses: databricks/setup-cli@main
+
+      - name: Validate Bundle
+        working-directory: ${{ env.DAB_DIR }}
+        run: |
+          databricks bundle validate -t dev-cicd \
+            --var="service_principal_id=${{ secrets.ARM_CLIENT_ID }}"

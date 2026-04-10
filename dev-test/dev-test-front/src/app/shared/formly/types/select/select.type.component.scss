@@ -1,0 +1,30 @@
+.form-group {
+    margin: 0px 0px;
+    label {
+        font-weight: normal; color: #666;
+    }
+}
+
+.btn-new-item {
+    width: 100%;
+    background: none;
+    border: none;
+    font-size: 1.1em;
+    margin: 0px;
+    font-weight: bold;
+    color: #aaa;
+    padding: 5px;
+    i {
+        font-size: 1.6em;
+        vertical-align: bottom;
+        color: #4CC802;
+    }
+}
+
+.btn-new-item:hover {
+    background-color: #dfdfdf;
+}
+
+::ng-deep .ng-clear-wrapper {
+    margin-top: 3px;
+}

@@ -1,0 +1,14 @@
+<div class="form-group" [class.error]="showError">
+    <label *ngIf="to.label" [ngClass]="{'col-md-2 col-form-label' : to.horizontalTemplate }">
+        {{ to.label }}
+        <span *ngIf="to.required" class="ng-star-inserted">*</span>
+    </label>
+    <div [ngClass]="{'col-md-10 col-form-label' : to.horizontalTemplate }">
+        <p-inputMask
+        [style]="{'width':'100%'}"
+        [formlyAttributes]="field"
+        [formControl]="formControl"
+        [mask]="to.mask"
+        [required]="to.required"></p-inputMask>
+    </div>
+</div>

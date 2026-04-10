@@ -1,0 +1,28 @@
+<div class="form-group" [class.error]="showError">
+    <label [ngClass]="{'col-md-3 col-form-label' : to.horizontalTemplate }" *ngIf="to.label">
+        {{to.label}}
+        <span *ngIf="to.required" class="ng-star-inserted">*</span>
+    </label>
+    <div class="grm-calendar-div">
+        <p-calendar
+            [style]="{'width':'100%'}"
+            [inputStyle]="{'width':'100%'}"
+            [formlyAttributes]="field"
+            [formControl]="formControl"
+            [readonlyInput]="to.readonlyInput"
+            [locale]="locales[locale]"
+            [dateFormat]="locales[locale].dateFormat"
+            [hourFormat]="locales[locale].hourFormat"
+            [selectionMode]="selectionMode"
+            [required]="to.required"
+            [showButtonBar]="to.showButtonBar"
+            [showIcon]="to.showIcon"
+            [timeOnly]="to.timeOnly"
+            [showTime]="to.showTime"
+            [showSeconds]="to.showSeconds"
+            [minDate]="to.minDate"
+            [maxDate]="to.maxDate"
+            (onSelect)="onChange(field)">
+        </p-calendar>
+    </div>
+</div>

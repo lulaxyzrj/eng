@@ -1,0 +1,13 @@
+version: 2
+
+sources:
+  - name: uber_eats
+    database: UBEREATS
+    schema: public
+    tables:
+      - name: v_stg_orders
+      - name: v_stg_status
+      - name: v_stg_users_mongodb
+      - name: v_stg_users_mssql
+      - name: v_stg_restaurants
+      - name: v_stg_drivers

@@ -1,0 +1,35 @@
+{
+    "global": {
+        "actions": {
+            "search": "Pesquisar",
+            "new": "Novo",
+            "back": "Voltar",
+            "inactivate": "Desativar",
+            "reactivate": "Ativar",
+            "save": "Salvar",
+            "cancel": "Cancelar",
+            "add": "Adicionar"
+        },
+        "pagination": {
+            "showing": "Exibindo",
+            "of": "de",
+            "in_total": "no total"
+        }
+    },
+    "task": {
+        "titlePage": "Tarefas",
+        "titleFilter": "Filtro",
+        "name": "Nome",
+        "description": "Descrição",
+        "active": "Ativo",
+        "inactive": "Inativo",
+        "all": "Todos",
+        "activities": "Atividades",
+        "newTask": "Nova Tarefa",
+        "editTask": "Editar Tarefa",
+        "equipmentType": "Tipo de Equipamento"
+    },
+    "select": {
+        "noItemsFound": "Não foram entrontrados itens"
+    }
+}

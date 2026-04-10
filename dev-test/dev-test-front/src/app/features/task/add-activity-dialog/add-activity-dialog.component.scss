@@ -1,0 +1,18 @@
+.dialog-content {
+    height: 100%;
+    width: 100%;
+}
+
+:host ::ng-deep .form-group label {
+    font-weight: normal;
+    color: #666;
+}
+
+:host ::ng-deep .custom-form-col{
+    margin-bottom: 15px !important;
+}
+
+:host ::ng-deep .page-header {
+    margin-top: 0px;
+    margin: 0px 0 0px;
+}

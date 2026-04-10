@@ -1,0 +1,21 @@
+# The main pipeline for bundle_databricks_exemple
+
+resources:
+  pipelines:
+    bundle_databricks_exemple_etl:
+      name: bundle_databricks_exemple_etl
+      # Catalog is required for serverless compute
+      catalog: ubereats_dev
+      schema: ${var.schema}
+      serverless: true
+      root_path: "../src/bundle_databricks_exemple_etl"
+
+      libraries:
+        - glob:
+            include: ../src/bundle_databricks_exemple_etl/transformations/**
+
+      environment:
+        dependencies:
+          # We include every dependency defined by pyproject.toml by defining an editable environment
+          # that points to the folder where pyproject.toml is deployed.
+          - --editable ${workspace.file_path}

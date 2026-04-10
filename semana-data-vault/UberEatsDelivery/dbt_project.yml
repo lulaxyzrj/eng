@@ -1,0 +1,49 @@
+# dbt_project.yml
+name: 'ubereats_datavault'
+version: '1.0.0'
+config-version: 2
+
+# This setting configures which "profile" dbt uses for this project.
+profile: 'ubereats_datavault'
+
+# These configurations specify where dbt should look for different types of files.
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["data"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+# Model configurations
+models:
+  ubereats_datavault:
+    # Configure materialization for each layer
+    staging:
+      +materialized: view
+      +tags: ['staging']
+    raw_vault:
+      +materialized: incremental
+      +tags: ['raw_vault']
+      hubs:
+        +materialized: incremental
+      links:
+        +materialized: incremental
+      satellites:
+        +materialized: incremental
+    business_vault:
+      +materialized: table
+      +tags: ['business_vault']
+    information_delivery:
+      +materialized: table
+      +tags: ['information_delivery']
+
+# Variables for AutomateDV
+vars:
+  # Load time variables
+  load_date: '{{ run_started_at.strftime("%Y-%m-%d %H:%M:%S") }}'
+  tgt_schema: 'DATA_VAULT'

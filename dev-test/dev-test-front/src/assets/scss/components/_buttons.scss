@@ -1,0 +1,62 @@
+@mixin button-config {
+    border:none;
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+    min-width: 120px;
+
+    &:disabled {
+        opacity: 0.4;
+        cursor:not-allowed !important;
+      }
+  }
+
+.grm-btn{
+    @include button-config;
+}
+
+.grm-btn-primary{
+    @include button-config;
+    background-color:  #007E7A;
+    color:white;
+}
+
+.grm-btn-red{
+    @include button-config;
+    background-color:  #D9534F;
+    color:white;
+}
+
+.grm-btn-default{
+    @include button-config;
+    color: #016d69;
+    background-color: white;
+    border:1px solid #016d69;
+}
+
+
+.grm-btn-primary:hover{
+    background-color: #016d69;
+}
+
+.grm-btn-edit:hover{
+    background-color: #f9f9f9;
+}
+
+.grm-btn-edit{
+   border-radius: 50px;
+   border: 1px solid lightgray;
+   background-color: white;
+   font-size: 18px;
+}
+
+button:disabled,button[disabled]{
+    opacity: 1;
+    cursor:not-allowed !important;
+}
+
+.grm-btn-danger{
+    @include button-config;
+    background-color:  #D9534F;
+    color:white;
+}

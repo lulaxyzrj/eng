@@ -1,0 +1,34 @@
+# ==============================================================================
+# Phase 02 - Unity Catalog Variables
+# ==============================================================================
+# Copy this file to terraform.tfvars and fill in the values.
+#
+# IMPORTANT: Most values are read automatically from Phase 01 via remote state.
+# You only need to provide these 3 values!
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Required: Databricks Account ID
+# ------------------------------------------------------------------------------
+# Get this from: https://accounts.azuredatabricks.net
+# Click on your email (top right) → Account Settings → Account ID
+
+databricks_account_id = "00000000-0000-0000-0000-000000000000"
+
+# ------------------------------------------------------------------------------
+# Required: Workspace URLs
+# ------------------------------------------------------------------------------
+# Get these from Phase 01 outputs:
+#   cd ../phase-01-azure-infra
+#   terraform output dev_workspace_url
+#   terraform output prod_workspace_url
+
+dev_workspace_url  = "https://adb-XXXXXX.X.azuredatabricks.net"
+prod_workspace_url = "https://adb-XXXXXX.X.azuredatabricks.net"
+
+# ------------------------------------------------------------------------------
+# Optional: Override defaults
+# ------------------------------------------------------------------------------
+
+# metastore_name = "ubereats-metastore"
+# prefix         = "ubereats"

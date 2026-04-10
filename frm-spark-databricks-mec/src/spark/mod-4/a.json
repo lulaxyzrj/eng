@@ -1,0 +1,72 @@
+POST
+/acesso/entrar
+Retornar token de Acesso e dados do usuário autenticado
+Retornar token de Acesso e dados do usuário autenticado
+
+Parameters
+Try it out
+No parameters
+
+Request body
+
+application/json
+payload requerido
+
+Example Value
+Schema
+{
+  "usuario": "string",
+  "senha": "string"
+}
+Responses
+Code	Description	Links
+200	
+successful operation
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+{
+  "isUsuarioLogado ": true,
+  "tokenAcesso": "",
+  "tokenAtualizacao": "",
+  "tempoExpiracaoTokenAtualizacao": "2023-01-12T18:01:11.405Z",
+  "mensagem ": "",
+  "isPrimeiroAcesso": true,
+  "usuario": [
+    {
+      "operadorId": "",
+      "usuario": "",
+      "nome": "",
+      "sobrenome": ""
+    }
+  ]
+}
+No links
+400	
+Bad Request
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "codigo": "",
+  "mensagem": ""
+}
+No links
+500	
+Server Error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "codigo": "",
+  "mensagem": ""

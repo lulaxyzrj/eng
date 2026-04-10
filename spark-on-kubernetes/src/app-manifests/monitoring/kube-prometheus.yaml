@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: prometheus-operator
+  namespace: gitops
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  project: default
+  source:
+    repoURL: 'git@github.com:owshq-mec/spark-on-kubernetes.git'
+    path: src/helm-charts/kube-prometheus-stack
+    targetRevision: main
+    helm:
+      valueFiles:
+        - values.yaml
+  destination:
+    namespace: monitoring
+    server: 'https://kubernetes.default.svc'
+  syncPolicy:
+    automated:
+      allowEmpty: false
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - Validate=true
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+      - ServerSideApply=true

@@ -1,0 +1,16 @@
+# Environment variables (root-level and project copies)
+.env
+
+# Terraform
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+.terraform/
+.terraform.lock.hcl
+*.auto.tfvars
+credentials.tfvars
+secrets.tfvars
+
+# IDE
+.vscode/

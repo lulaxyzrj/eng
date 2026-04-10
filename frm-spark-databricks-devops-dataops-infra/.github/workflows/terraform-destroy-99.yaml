@@ -1,0 +1,134 @@
+name: 'Phase 99 - Destroy All (Preserve Bootstrap)'
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: 'Type DESTROY to confirm'
+        required: true
+        type: string
+
+env:
+  ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+  ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+  ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+  TF_BACKEND_RG: "ubereats-tfstate-rg"
+  TF_BACKEND_SA: ${{ secrets.TF_BACKEND_SA }}
+  TF_BACKEND_CONTAINER: "tfstate"
+
+jobs:
+  destroy:
+    name: 'Destroy All'
+    runs-on: ubuntu-latest
+    
+    steps:
+      # ========================================================================
+      # Validation
+      # ========================================================================
+      - name: Validate Confirmation
+        if: inputs.confirmation != 'DESTROY'
+        run: |
+          echo "❌ You must type 'DESTROY' to proceed."
+          echo "   You typed: '${{ inputs.confirmation }}'"
+          exit 1
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: '{"clientId":"${{ secrets.ARM_CLIENT_ID }}","clientSecret":"${{ secrets.ARM_CLIENT_SECRET }}","subscriptionId":"${{ secrets.ARM_SUBSCRIPTION_ID }}","tenantId":"${{ secrets.ARM_TENANT_ID }}"}'
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.0
+
+      # ========================================================================
+      # Destroy Phase 02 - Unity Catalog (FIRST)
+      # ========================================================================
+      - name: Get Phase 01 Outputs (for Phase 02 variables)
+        id: phase01
+        run: |
+          az storage blob download \
+            --account-name $TF_BACKEND_SA \
+            --container-name $TF_BACKEND_CONTAINER \
+            --name "phase-01-azure-infra.tfstate" \
+            --file /tmp/phase01.tfstate \
+            --auth-mode login 2>/dev/null || echo '{"outputs":{}}' > /tmp/phase01.tfstate
+          
+          DEV_URL=$(cat /tmp/phase01.tfstate | jq -r '.outputs.dev_workspace_url.value // "https://placeholder"')
+          PROD_URL=$(cat /tmp/phase01.tfstate | jq -r '.outputs.prod_workspace_url.value // "https://placeholder"')
+          
+          echo "dev_workspace_url=$DEV_URL" >> $GITHUB_OUTPUT
+          echo "prod_workspace_url=$PROD_URL" >> $GITHUB_OUTPUT
+
+      - name: Terraform Init - Phase 02
+        working-directory: terraform-infra-cicd/phase-02-unity-catalog
+        run: |
+          terraform init \
+            -backend-config="resource_group_name=$TF_BACKEND_RG" \
+            -backend-config="storage_account_name=$TF_BACKEND_SA" \
+            -backend-config="container_name=$TF_BACKEND_CONTAINER"
+
+      - name: Terraform Destroy - Phase 02
+        working-directory: terraform-infra-cicd/phase-02-unity-catalog
+        env:
+          TF_VAR_backend_resource_group: ${{ env.TF_BACKEND_RG }}
+          TF_VAR_backend_storage_account: ${{ secrets.TF_BACKEND_SA }}
+          TF_VAR_backend_container: ${{ env.TF_BACKEND_CONTAINER }}
+          TF_VAR_databricks_account_id: ${{ secrets.DATABRICKS_ACCOUNT_ID }}
+          TF_VAR_dev_workspace_url: ${{ steps.phase01.outputs.dev_workspace_url }}
+          TF_VAR_prod_workspace_url: ${{ steps.phase01.outputs.prod_workspace_url }}
+        run: terraform destroy -auto-approve || echo "⚠️ Phase 02 destroy failed or empty state"
+
+      - name: Phase 02 Destroyed
+        run: echo "✅ Phase 02 (Unity Catalog) - Done"
+
+      # ========================================================================
+      # Destroy Phase 01 - Azure Infrastructure (SECOND)
+      # ========================================================================
+      - name: Terraform Init - Phase 01
+        working-directory: terraform-infra-cicd/phase-01-azure-infra
+        run: |
+          terraform init \
+            -backend-config="resource_group_name=$TF_BACKEND_RG" \
+            -backend-config="storage_account_name=$TF_BACKEND_SA" \
+            -backend-config="container_name=$TF_BACKEND_CONTAINER"
+
+      - name: Workaround - Unlock Metastore Deletion
+        working-directory: terraform-infra-cicd/phase-01-azure-infra
+        env:
+          TF_VAR_databricks_account_id: ${{ secrets.DATABRICKS_ACCOUNT_ID }}
+        run: |
+          echo "Removing data_access from state to avoid dependency deadlock..."
+          terraform state rm databricks_metastore_data_access.this || echo "⚠️ Resource already removed or not found"
+
+      - name: Terraform Destroy - Phase 01
+        working-directory: terraform-infra-cicd/phase-01-azure-infra
+        env:
+          TF_VAR_databricks_account_id: ${{ secrets.DATABRICKS_ACCOUNT_ID }}
+        run: terraform destroy -auto-approve || echo "⚠️ Phase 01 destroy failed or empty state"
+
+      - name: Phase 01 Destroyed
+        run: echo "✅ Phase 01 (Azure Infrastructure) - Done"
+
+      # ========================================================================
+      # Summary
+      # ========================================================================
+      - name: Summary
+        run: |
+          echo "============================================================="
+          echo "  ✅ DESTRUCTION COMPLETE"
+          echo "============================================================="
+          echo ""
+          echo "Destroyed:"
+          echo "  - Phase 02: Unity Catalog (assignments, catalogs, grants)"
+          echo "  - Phase 01: Azure Infra (metastore, workspaces, storage, VNets)"
+          echo ""
+          echo "NOT destroyed (manual cleanup if needed):"
+          echo "  - Phase 00: Bootstrap (tfstate storage, service principal)"
+          echo ""
+          echo "============================================================="

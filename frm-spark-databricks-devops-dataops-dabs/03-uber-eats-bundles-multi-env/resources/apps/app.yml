@@ -1,0 +1,16 @@
+resources:
+  apps:
+    ubereats_dashboard:
+      name: "ubereats-dashboard-${bundle.target}"
+      description: "UberEats Operations Dashboard - Order Funnel & Payment Health"
+      source_code_path: ../../src/app
+
+      permissions:
+        - group_name: data-engineers
+          level: CAN_MANAGE
+
+      resources:
+        - name: sql_warehouse
+          sql_warehouse:
+            id: ${var.warehouse_id}
+            permission: CAN_USE

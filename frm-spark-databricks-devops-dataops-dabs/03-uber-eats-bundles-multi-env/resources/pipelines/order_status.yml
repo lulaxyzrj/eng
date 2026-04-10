@@ -1,0 +1,64 @@
+# =============================================================================
+# Order Status Pipeline
+# Bronze → Silver → Gold
+# =============================================================================
+
+resources:
+  pipelines:
+    order_status_pipeline:
+      name: "[${bundle.target}] Order Status Pipeline"
+      
+      # Unity Catalog
+      catalog: ${var.catalog}
+      schema: ${var.bronze_schema}
+      
+      # ============================================================================= 
+      #  Summary 
+      #  target: Acts as a lock. It strictly forces all pipeline 
+      #     output into a single schema, rejecting multi-schema writes defined in code.
+      #  schema: Acts as a default. It handles system/internal tables 
+      #    but allows your code to explicitly write to multiple 
+      #    schemas (Bronze/Silver/Gold) freely.
+      # =============================================================================
+
+      # ---------------------------------------------------------------------------
+      # Pipeline Parameters
+      # Access in notebooks via: spark.conf.get("pipeline.param_name")
+      # ---------------------------------------------------------------------------
+      configuration:
+        "pipeline.storage_account": ${var.storage_account}
+        "pipeline.landing_container": ${var.landing_container}
+        "pipeline.landing_path": "abfss://${var.landing_container}@${var.storage_account}.dfs.core.windows.net"
+        "pipeline.catalog": ${var.catalog}
+        "pipeline.bronze_schema": ${var.bronze_schema}
+        "pipeline.silver_schema": ${var.silver_schema}
+        "pipeline.gold_schema": ${var.gold_schema}
+
+      # Pipeline settings
+      development: true
+      continuous: false
+      channel: CURRENT
+      photon: true
+
+      # Cluster
+      serverless: true
+      
+      # Source notebooks
+      libraries:
+        - notebook:
+            path: ../../src/bronze/order_status.py
+        - notebook:
+            path: ../../src/silver/order_status.py
+        - notebook:
+            path: ../../src/gold/order_status.py
+      
+
+    # =============================================================================
+    # Pipeline Permissions:
+    # For didatic purposes only; this should be restricted in production
+    # and created via terraform on unity catalog or better managed via other means.
+    # =============================================================================
+
+      permissions:
+        - group_name: data-engineers
+          level: CAN_MANAGE 

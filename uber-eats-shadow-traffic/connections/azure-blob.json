@@ -1,0 +1,15 @@
+{
+    "kind": "azureBlobStorage",
+    "description": "Production Azure Blob Storage for data lake scenarios",
+    "config": {
+        "kind": "azureBlobStorage",
+        "connectionConfigs": {
+            "connectionString": "DefaultEndpointsProtocol=https;AccountName=owshqblobstg;AccountKey=lmKoi0C1eXYJ/10fOqh+4im0CT8wyw/MWbUqmNooiH6yH2mmNS1HtiZNMXDUvCEc0TRtC/3i2eat+AStq3oURg==;EndpointSuffix=core.windows.net"
+        },
+        "batchConfigs": {
+            "lingerMs": 2000,
+            "batchElements": 10000,
+            "batchBytes": 5242880
+        }
+    }
+}
