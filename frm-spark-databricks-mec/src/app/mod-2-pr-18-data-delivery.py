@@ -1,8 +1,7 @@
 """
-docker exec -it spark-master /opt/bitnami/spark/bin/spark-submit \
-  --master spark://spark-master:7077 \
-  --deploy-mode client \
-  /opt/bitnami/spark/jobs/app/mod-2-pr-18-data-delivery.py
+docker exec -it spark-master /opt/bitnami/spark/bin/spark-submit --master 'local[*]' --deploy-mode client /opt/bitnami/spark/jobs/app/mod-2-pr-8-data-delivery.py
+
+
 """
 
 from pyspark.sql import SparkSession

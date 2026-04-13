@@ -33,8 +33,8 @@ spark.sparkContext.setLogLevel("ERROR")
 pg_host = "159.203.159.29"
 pg_port = "5432"
 pg_database = "postgres"
-pg_user = "postgres"
-pg_password = "6e8e5979-25c5-44e2-ad76-7a4e8ee68c6f"
+pg_user = "u_readonly_user"
+pg_password = "@1re620250n1"
 
 jdbc_url = f"jdbc:postgresql://{pg_host}:{pg_port}/{pg_database}"
 
