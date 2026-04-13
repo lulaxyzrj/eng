@@ -62,10 +62,10 @@ helm install minio-tenant ./src/helm-charts/tenant -f ./src/helm-charts/tenant/v
 
 ```sh
 # Navigate to the images folder src/images/spark and build the image
-docker build -t grudtnerv/spok:1.0.0 .
+docker build -t lulaxyzrj/spok:1.0.0 .
 
 # Push the image to the registry
-docker push grudtnerv/spok:1.0.0 
+docker push lulaxyzrj/spok:1.0.0 
 ```
 
 
