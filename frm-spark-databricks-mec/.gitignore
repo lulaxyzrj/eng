@@ -15,5 +15,4 @@ storage/
 build/.env
 build/logs/
 build/metrics/
-build/src/
 build/config/spark/jars/*.jar
