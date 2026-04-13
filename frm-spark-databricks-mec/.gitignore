@@ -3,14 +3,9 @@ venv
 .idea/
 .DS_Store
 **/__pycache__/
-*.py[cod]
 *.log
-
 logs/
-
 # Local data & Spark output (folder stays on disk; not removed by gitignore)
-storage/
-
 # Build/runtime artifacts & secrets
 build/.env
 build/logs/
