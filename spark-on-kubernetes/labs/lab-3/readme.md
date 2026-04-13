@@ -73,6 +73,12 @@ docker push grudtnerv/spok:1.0.0
 
 ```sh
 # Apply the shadowtraffic manifest
+kubectl create secret generic shadowtraffic-license \
+  --from-env-file=/home/luiz/github/eng/spark-on-kubernetes/license.env \
+  -n default \
+  --dry-run=client -o yaml | kubectl apply -f -
+secret/shadowtraffic-license created
+
 kubectl apply -f src/datagen/shadowtraffic-ubereats.yaml -n default
 ```
 
